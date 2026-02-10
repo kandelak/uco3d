@@ -1,0 +1,13 @@
+sqlalchemy>=2.0
+pandas
+tqdm
+torchvision
+torch
+matplotlib
+plyfile
+h5py
+av==12.0.0
+imageio
+opencv-python
+omegaconf
+scipy
