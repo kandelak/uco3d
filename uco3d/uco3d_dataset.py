@@ -647,9 +647,16 @@ class UCO3DDataset:
     def _load_subsets_from_sql(self, subset_lists_path: str) -> pd.DataFrame:
         subsets = self.subsets
         assert subsets is not None
-        # we need a new engine since we store the subsets in a separate DB
-        engine = sa.create_engine(f"sqlite:///{subset_lists_path}")
-        table = sa.Table(_SET_LISTS_TABLE, sa.MetaData(), autoload_with=engine)
+        # we need a new engine since we store the subsets in a separate DB.
+        # Open in read-only mode so locations on shared/readonly storage still work.
+        ro_uri = f"sqlite+pysqlite:///{subset_lists_path}?mode=ro&uri=true"
+        try:
+            engine = sa.create_engine(ro_uri)
+            table = sa.Table(_SET_LISTS_TABLE, sa.MetaData(), autoload_with=engine)
+        except sa.exc.OperationalError:
+            # Fallback for older SQLite builds that do not support uri/ro flags.
+            engine = sa.create_engine(f"sqlite:///{subset_lists_path}")
+            table = sa.Table(_SET_LISTS_TABLE, sa.MetaData(), autoload_with=engine)
         stmt = sa.select(table).where(table.c.subset.in_(subsets))
         with engine.connect() as connection:
             index = pd.read_sql(stmt, connection)
