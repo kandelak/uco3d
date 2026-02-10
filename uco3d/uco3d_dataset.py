@@ -648,7 +648,7 @@ class UCO3DDataset:
         subsets = self.subsets
         assert subsets is not None
         # we need a new engine since we store the subsets in a separate DB
-        engine = sa.create_engine(f"sqlite:///{subset_lists_path}")
+        engine = sa.create_engine(f"sqlite:///file:{subset_lists_path}?mode=ro&uri=true")
         table = sa.Table(_SET_LISTS_TABLE, sa.MetaData(), autoload_with=engine)
         stmt = sa.select(table).where(table.c.subset.in_(subsets))
         with engine.connect() as connection:
