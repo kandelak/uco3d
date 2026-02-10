@@ -8,14 +8,16 @@ dataset_root = get_dataset_root(assert_exists=True)
 # Get the "small" subset list containing a small subset
 # of the uCO3D categories. For loading the whole dataset
 # use "set_lists_all-categories.sqlite".
-subset_lists_file = os.path.join(
-    dataset_root,
-    "set_lists", 
-    "set_lists_3categories-debug.sqlite",
-)
+# subset_lists_file = os.path.join(
+#     dataset_root,
+#     "set_lists", 
+#     "set_lists_3categories-debug.sqlite",
+# )
+
+subset_lists_file = "/home/stud/kandelak/git/uco3d/set_lists_3categories-debug.sqlite"
 dataset = UCO3DDataset(
     subset_lists_file=subset_lists_file,
-    subsets=["test"],
+    subsets=["train"],
     frame_data_builder=UCO3DFrameDataBuilder(
         apply_alignment=False,
         load_images=False,
@@ -42,3 +44,5 @@ R, tvec, camera_matrix = opencv_cameras_projection_from_uco3d(
     frame_data.camera,
     image_size=frame_data.image_size_hw[None],
 )  # R, tvec, camera_matrix follow OpenCV's camera definition
+
+print(R)
