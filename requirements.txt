@@ -1,5 +1,5 @@
 sqlalchemy>=2.0
-pandas
+pandas~=2.3.3
 tqdm
 torchvision
 torch

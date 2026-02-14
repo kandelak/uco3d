@@ -2,7 +2,10 @@ from uco3d import UCO3DDataset, UCO3DFrameDataBuilder
 from uco3d.dataset_utils.utils import get_dataset_root
 from uco3d import opencv_cameras_projection_from_uco3d
 import torch
-
+from PIL import Image
+from tqdm import tqdm
+import os
+import numpy as np
 # Get the dataset root folder and check that
 # all required metadata files exist.
 dataset_root = get_dataset_root(assert_exists=True)
@@ -10,15 +13,18 @@ dataset_root = get_dataset_root(assert_exists=True)
 # of the uCO3D categories. For loading the whole dataset
 # use "set_lists_all-categories.sqlite".
 
-subset_lists_file = "/Users/aleksandrekandelaki/git/private/3d/uco3d/UCO3D_DEBUG/set_lists/set_lists_all-categories.sqlite"
+# subset_lists_file = "/home/stud/kandelak/git/uco3d/set_lists_all-categories.sqlite"
+# subset_lists_file = "/home/stud/kandelak/git/uco3d/static_accurate_val.json"
+# subset_lists_file = "/home/stud/kandelak/git/uco3d/set_lists_3categories-debug.sqlite"
+subset_available_on_server = "/home/stud/kandelak/git/uco3d/set_lists/set_lists_available_on_server.sqlite"
 dataset = UCO3DDataset(
-    subset_lists_file=subset_lists_file,
-    subsets=["train"],
+    subset_lists_file=subset_available_on_server,
+    subsets=["all"],
     frame_data_builder=UCO3DFrameDataBuilder(
         apply_alignment=False,
         load_images=True,
         load_depths=False,
-        load_masks=False,
+        load_masks=False, 
         load_depth_masks=False,
         load_gaussian_splats=False,
         gaussian_splats_truncate_background=False,
@@ -37,10 +43,12 @@ dataset = UCO3DDataset(
 # query the dataset object to obtain a single video frame of a sequence
 
 if __name__ == "__main__":
-    # sequence_name = '475-99485-99578'
+    
+    NUM_SEQUENCES_TO_SAMPLE = 500
+    folder_name = "random_2_views_samples"
+    
+    for i in tqdm(range(NUM_SEQUENCES_TO_SAMPLE), desc="Sampling sequences and saving images and camera parameters"):
 
-    for i in range(13):
-        folder_name = "try"
         frame_data_1 = dataset[2*i]
         R_1, tvec_1, camera_matrix_1 = opencv_cameras_projection_from_uco3d(
             frame_data_1.camera,
@@ -53,11 +61,6 @@ if __name__ == "__main__":
             image_size=frame_data_2.image_size_hw[None],
         )  # R, tvec, camera_matrix follow OpenCV's camera definition
 
-        from PIL import Image
-
-        # save bot images under "./images_to_infer/
-        import os
-        import numpy as np
 
         os.makedirs(f"./{folder_name}/{frame_data_1.sequence_name}/images_to_infer/", exist_ok=True)
         img_1 = frame_data_1.image_rgb.permute(1, 2, 0).numpy()
